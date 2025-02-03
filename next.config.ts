@@ -1,9 +1,13 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    remotePatterns: [],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "be2-documents-staging.s3.amazonaws.com",
+      },
+    ],
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

@@ -1,5 +1,5 @@
 export type User = {
-  username: string;
+  fullname: string;
   isLoggedIn: boolean;
   loginTime: string;
 };

@@ -4,7 +4,8 @@ const UPDATE_COMPANY = gql`
   mutation UpdateCompany($companyId: ID!, $input: UpdateCompanyInput!) {
     updateCompany(companyId: $companyId, input: $input) {
       company {
-        email
+        email,
+        id,
       }
     }
   }
@@ -14,7 +15,8 @@ const CREATE_COMPANY = gql`
   mutation CreateCompany($input: UpdateCompanyInput!) {
     createCompany(input: $input) {
       company {
-        email
+        email,
+        id,
       }
     }
   }

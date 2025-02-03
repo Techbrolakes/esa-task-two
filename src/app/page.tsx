@@ -4,20 +4,19 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { EyeOff, Eye } from "lucide-react";
 import { toast } from "react-toastify";
 import { setUser } from "@/utils/storage";
 import { useRouter } from "next/navigation";
+import FormInput from "@/components/form/FormInput";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(6, "Password must be at least 6 characters").max(50, "Password must not exceed 50 characters"),
+  fullname: z.string().min(1, "Fullname is required"),
+  email: z.string().email("Invalid email address"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -36,7 +35,7 @@ const LoginPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       setUser({
-        username: data.username,
+        fullname: data.fullname,
         isLoggedIn: true,
         loginTime: new Date().toISOString(),
       });
@@ -53,7 +52,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 via-blue-950 to-slate-900 animate-gradient-x">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black via-[#060C21] to-black animate-gradient-x">
       {/* Form Container */}
       <div className="w-full rounded-tr-2xl rounded-bl-3xl flex flex-col justify-center max-w-lg h-[500px] p-8 space-y-12 bg-white shadow-md transform transition-all duration-300 hover:scale-[1.02]">
         {/* Header */}
@@ -63,46 +62,22 @@ const LoginPage = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 relative">
-          {/* Username Field */}
-          <div className="space-y-2  text-sm opacity-80 ">
-            <label className="font-medium">Enter Username</label>
-            <input
-              type="text"
-              {...register("username")}
-              className={`w-full px-5 py-3 rounded-lg border ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white`}
-              placeholder="Enter your username"
-            />
+          <FormInput
+            label="Enter Full name"
+            register={register}
+            name="fullname"
+            error={errors.fullname}
+            placeholder="Enter your fullname"
+          />
 
-            {errors.username && <p className="text-sm text-red-500 ml-1">{errors.username.message}</p>}
-          </div>
-
-          {/* Password Field */}
-          <div className="space-y-1">
-            <div className="relative group">
-              <div className="space-y-2  text-sm opacity-80 ">
-                <label className="font-medium">Enter Username</label>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  {...register("password")}
-                  className={`w-full px-5 py-3 rounded-lg border ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  } focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white`}
-                  placeholder="Enter your password"
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2/3 transform -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors duration-200"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            {errors.password && <p className="text-sm text-red-500 ml-1">{errors.password.message}</p>}
-          </div>
+          <FormInput
+            label="Enter Email"
+            register={register}
+            name="email"
+            type="email"
+            error={errors.email}
+            placeholder="Enter your email"
+          />
 
           {/* Submit Button */}
           <button
