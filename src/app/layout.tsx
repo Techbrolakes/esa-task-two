@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import ApolloClientProvider from "@/providers/ApolloProvider";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Suspense } from "react";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -76,23 +74,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={Satoshi.variable}>
-        <ApolloClientProvider>
-          <Suspense>{children}</Suspense>
-
-          {/* Toast Container */}
-          <ToastContainer
-            position="top-right"
-            autoClose={3000}
-            hideProgressBar={false}
-            newestOnTop
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light"
-          />
-        </ApolloClientProvider>
+        <div className="py-6 overflow-y-auto bg-gradient-to-br from-black via-[#060C21] to-black animate-gradient-x">
+          {children}
+        </div>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </body>
     </html>
   );

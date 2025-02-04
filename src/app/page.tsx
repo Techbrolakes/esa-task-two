@@ -56,7 +56,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-black via-[#060C21] to-black animate-gradient-x">
+    <div className="min-h-screen flex items-center justify-center p-4 ">
       {/* Form Container */}
       <div className="w-full rounded-tr-2xl rounded-bl-3xl flex flex-col justify-center max-w-lg h-[500px] p-8 space-y-12 bg-white shadow-md transform transition-all duration-300 hover:scale-[1.02]">
         {/* Header */}

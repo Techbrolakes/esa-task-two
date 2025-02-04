@@ -131,7 +131,7 @@ export default function CompanyPage() {
         }
 
         toast.success("Company updated successfully!");
-        router.push("/companies");
+        router.push(`/companies?companyId=${data.updateCompany.company.id}`);
       }
     },
     onError: (error) => {
@@ -602,8 +602,8 @@ export default function CompanyPage() {
   };
 
   return (
-    <div className="min-h-screen py-6 text-white p-4 bg-gradient-to-br from-black via-[#060C21] to-black animate-gradient-x">
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-7xl mx-auto space-y-8 p-8">
+    <div className="py-6 text-white">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 p-8">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-semibold">{companyId ? "Update Company" : "Create Company"}</h1>
           <Link href="/companies" className="text-blue-500 hover:text-blue-400">
