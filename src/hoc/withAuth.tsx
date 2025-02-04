@@ -12,8 +12,8 @@ export function withAuth<P extends object>(WrappedComponent: ComponentType<P>): 
     useEffect(() => {
       const user = getUser();
 
-      toast.error("You are not authorized to view this page without logging in.");
       if (!user || !user.data) {
+        toast.error("You are not authorized to view this page without logging in.");
         router.push("/");
       }
     }, [router]);
