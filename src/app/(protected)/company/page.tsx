@@ -45,6 +45,7 @@ function CompanyPage() {
     reset,
     trigger,
     setValue,
+    control,
   } = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
     mode: "onChange",
@@ -105,6 +106,14 @@ function CompanyPage() {
     }
   }, [companyId, reset]);
 
+  useEffect(() => {
+    return () => {
+      if (!formIsDirty) {
+        clearSavedFormData();
+      }
+    };
+  }, [formIsDirty]);
+
   const formData = watch();
 
   useEffect(() => {
@@ -157,11 +166,17 @@ function CompanyPage() {
         }
 
         clearSavedFormData();
+        reset();
+        setIsDirty(false);
+
         toast.success("Company created successfully!");
         router.push("/companies");
       }
     },
     onError: (error) => {
+      clearSavedFormData();
+      reset();
+      setIsDirty(false);
       toast.error(error.message || "Failed to create company");
     },
   });
@@ -181,12 +196,17 @@ function CompanyPage() {
         }
 
         clearSavedFormData();
+        reset();
+        setIsDirty(false);
 
         toast.success("Company updated successfully!");
         router.push(`/companies?companyId=${data.updateCompany.company.id}`);
       }
     },
     onError: (error) => {
+      clearSavedFormData();
+      reset();
+      setIsDirty(false);
       toast.error(error.message || "Failed to update company");
     },
   });
@@ -276,7 +296,6 @@ function CompanyPage() {
     if (currentIndex < sections.length - 1) {
       const fieldsToValidate = getCurrentSectionFields();
 
-      // Validate the fields
       const isValid = await trigger(fieldsToValidate, {
         shouldFocus: true,
       });
@@ -367,7 +386,14 @@ function CompanyPage() {
     switch (activeSection) {
       case "company":
         return (
-          <CompanySection register={register} errors={errors} watch={watch} setValue={setValue} initialLogoKey={initialLogoKey} />
+          <CompanySection
+            control={control}
+            register={register}
+            errors={errors}
+            watch={watch}
+            setValue={setValue}
+            initialLogoKey={initialLogoKey}
+          />
         );
 
       case "employees":
@@ -377,7 +403,7 @@ function CompanyPage() {
         return <AddressSection register={register} errors={errors} watch={watch} />;
 
       case "contact":
-        return <ContactSection register={register} errors={errors} />;
+        return <ContactSection register={register} errors={errors} control={control} />;
     }
   };
 

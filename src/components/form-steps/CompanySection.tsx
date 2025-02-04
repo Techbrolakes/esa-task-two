@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
-import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from "react-hook-form";
+import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue, Control } from "react-hook-form";
 import { Building2, Mail, Phone, Globe, MapPinIcon } from "lucide-react";
 import { CompanyFormData } from "@/components/validations";
 import FancyInput from "@/components/form/FancyInput";
 import LogoUploader from "@/components/LogoUploader";
 import LinkedinIcon from "@/icons/LinkedinIcon";
 import FacebookIcon from "@/icons/FacebookIcon";
+import PhoneInputField from "../form/PhoneInputField";
 
 interface CompanySectionProps {
   register: UseFormRegister<CompanyFormData>;
@@ -15,9 +16,10 @@ interface CompanySectionProps {
   watch: UseFormWatch<CompanyFormData>;
   setValue: UseFormSetValue<CompanyFormData>;
   initialLogoKey: string | null;
+  control: Control<CompanyFormData>;
 }
 
-const CompanySection = ({ register, errors, watch, setValue, initialLogoKey }: CompanySectionProps) => {
+const CompanySection = ({ register, errors, watch, setValue, initialLogoKey, control }: CompanySectionProps) => {
   return (
     <div className="space-y-6">
       <div className="p-4 bg-gray-800/40 rounded-lg border border-gray-700">
@@ -56,15 +58,12 @@ const CompanySection = ({ register, errors, watch, setValue, initialLogoKey }: C
           required
           startIcon={<Mail className="w-4 h-4" />}
         />
-        <FancyInput<CompanyFormData>
-          label="Phone"
-          type="number"
+        <PhoneInputField
+          control={control} 
           name="phone"
-          register={register}
-          error={errors.phone}
-          placeholder="+1 (555) 000-0000"
+          label="Phone"
           required
-          startIcon={<Phone className="w-4 h-4" />}
+          error={errors.phone}
         />
       </div>
 

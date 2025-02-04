@@ -1,17 +1,19 @@
 "use client";
 
 import React from "react";
-import { UseFormRegister, FieldErrors } from "react-hook-form";
-import { UserCircle, Mail, Phone } from "lucide-react";
+import { UseFormRegister, FieldErrors, Control } from "react-hook-form";
+import { UserCircle, Mail } from "lucide-react";
 import { CompanyFormData } from "@/components/validations";
 import FancyInput from "@/components/form/FancyInput";
+import PhoneInputField from "../form/PhoneInputField";
 
 interface ContactSectionProps {
   register: UseFormRegister<CompanyFormData>;
   errors: FieldErrors<CompanyFormData>;
+  control: Control<CompanyFormData>;
 }
 
-const ContactSection = ({ register, errors }: ContactSectionProps) => {
+const ContactSection = ({ register, errors, control }: ContactSectionProps) => {
   return (
     <div className="p-6 bg-gray-800/40 rounded-lg border border-gray-700 space-y-6">
       <h3 className="text-lg font-semibold text-white">Primary Contact Person</h3>
@@ -48,15 +50,12 @@ const ContactSection = ({ register, errors }: ContactSectionProps) => {
           required
           startIcon={<Mail className="w-4 h-4" />}
         />
-        <FancyInput<CompanyFormData>
-          label="Phone"
+        <PhoneInputField
+          control={control}
           name="primaryContactPerson.phone"
-          type="number"
-          register={register}
-          error={errors.primaryContactPerson?.phone}
-          placeholder="+1 (555) 000-0000"
+          label="Phone"
           required
-          startIcon={<Phone className="w-4 h-4" />}
+          error={errors.primaryContactPerson?.phone}
         />
       </div>
     </div>
