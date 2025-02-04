@@ -9,16 +9,19 @@ import { useMutation, useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CompanyFormData, companySchema } from "@/components/validations";
 import { Company } from "@/types";
-import { getItem, setItem } from "@/utils/storage";
+import { getItem, removeItem, setItem } from "@/utils/storage";
 import queries from "@/lib/queries";
-import Link from "next/link";
 import { ArrowLeft, ArrowRight, Building2, Users, MapPin, UserCircle, SendHorizonal } from "lucide-react";
 import CompanySection from "@/components/form-steps/CompanySection";
 import EmployeeSection from "@/components/form-steps/EmployeeSection";
 import AddressSection from "@/components/form-steps/AddressSection";
 import ContactSection from "@/components/form-steps/ContactSection";
+import ExitDialog from "@/components/ui/ExitDialog";
+import { Skeleton } from "@/components/Skeleton";
 
 const sections = ["company", "employees", "address", "contact"] as const;
+
+const FORM_STORAGE_KEY = "companyFormData";
 
 const sectionIcons = {
   company: <Building2 size={18} />,
@@ -31,10 +34,13 @@ function CompanyPage() {
   const searchParams = useSearchParams();
   const [initialLogoKey, setInitialLogoKey] = useState<string | null>(null);
   const companyId = searchParams.get("companyId");
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty: formIsDirty },
     watch,
     reset,
     trigger,
@@ -89,6 +95,55 @@ function CompanyPage() {
     },
   });
 
+  useEffect(() => {
+    if (!companyId) {
+      const savedData = getItem(FORM_STORAGE_KEY).data;
+      if (savedData) {
+        reset(savedData);
+        setIsDirty(true);
+      }
+    }
+  }, [companyId, reset]);
+
+  const formData = watch();
+
+  useEffect(() => {
+    if (!companyId && formIsDirty) {
+      setItem(FORM_STORAGE_KEY, formData);
+      setIsDirty(true);
+    }
+  }, [formData, companyId, formIsDirty]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent): string | undefined => {
+      if (isDirty) {
+        e.preventDefault();
+        return "You have unsaved changes. Are you sure you want to leave?";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  const clearSavedFormData = () => {
+    removeItem(FORM_STORAGE_KEY);
+    setIsDirty(false);
+  };
+
+  const handleNavigateBack = () => {
+    if (isDirty) {
+      setShowExitDialog(true);
+    } else {
+      router.push("/companies");
+    }
+  };
+
+  const confirmExit = () => {
+    clearSavedFormData();
+    router.push("/companies");
+  };
+
   const [createCompany, { loading: creating }] = useMutation(mutations.CREATE_COMPANY, {
     onCompleted: (data) => {
       if (data?.createCompany?.company) {
@@ -101,6 +156,7 @@ function CompanyPage() {
           return;
         }
 
+        clearSavedFormData();
         toast.success("Company created successfully!");
         router.push("/companies");
       }
@@ -123,6 +179,8 @@ function CompanyPage() {
           toast.error("Company updated but failed to save locally");
           return;
         }
+
+        clearSavedFormData();
 
         toast.success("Company updated successfully!");
         router.push(`/companies?companyId=${data.updateCompany.company.id}`);
@@ -302,25 +360,7 @@ function CompanyPage() {
   };
 
   if (fetchingCompany) {
-    return (
-      <div className="min-h-screen py-6 text-white p-4 bg-gradient-to-br from-gray-900 via-[#060C21] to-gray-900">
-        <div className="max-w-4xl mx-auto p-8">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-800/50 rounded-lg w-1/4"></div>
-            <div className="grid grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-12 bg-gray-800/50 rounded-lg"></div>
-              ))}
-            </div>
-            <div className="p-6 bg-gray-800/40 rounded-lg border border-gray-700 space-y-4">
-              <div className="h-4 bg-gray-800/50 rounded-lg w-3/4"></div>
-              <div className="h-4 bg-gray-800/50 rounded-lg w-2/3"></div>
-              <div className="h-4 bg-gray-800/50 rounded-lg w-1/2"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Skeleton />;
   }
 
   const renderSection = () => {
@@ -349,13 +389,15 @@ function CompanyPage() {
           <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
             {companyId ? "Update Company" : "Create Company"}
           </h1>
-          <Link
-            href="/companies"
+          <button
+            type="button"
+            disabled={creating || updating}
+            onClick={handleNavigateBack}
             className="bg-gray-800/40 hover:bg-gray-700/40 text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2"
           >
             <ArrowLeft size={18} />
             Back to Companies
-          </Link>
+          </button>
         </div>
 
         {/* Section Navigation */}
@@ -438,8 +480,12 @@ function CompanyPage() {
           </div>
         </div>
       </form>
+
+      <ExitDialog isOpen={showExitDialog} onClose={() => setShowExitDialog(false)} onConfirm={confirmExit} />
     </div>
   );
 }
 
 export default CompanyPage;
+
+// Custom Alert Dialog Component
