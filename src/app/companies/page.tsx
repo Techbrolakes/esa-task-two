@@ -1,6 +1,7 @@
 "use client";
 
 import CompanyDetails from "@/components/CompanyDetails";
+import { withAuth } from "@/hoc/withAuth";
 import { Company } from "@/types";
 import { getItem, removeItem } from "@/utils/storage";
 import { getUser } from "@/utils/storage";
@@ -8,7 +9,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-export default function CompaniesPage() {
+function CompaniesPage() {
   const { data } = getUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -108,3 +109,5 @@ export default function CompaniesPage() {
     </div>
   );
 }
+
+export default withAuth(CompaniesPage);

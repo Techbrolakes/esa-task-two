@@ -14,10 +14,11 @@ import { Company } from "@/types";
 import { getItem, setItem } from "@/utils/storage";
 import queries from "@/lib/queries";
 import Link from "next/link";
+import { withAuth } from "@/hoc/withAuth";
 
 const sections = ["company", "employees", "address", "contact"] as const;
 
-export default function CompanyPage() {
+function CompanyPage() {
   const searchParams = useSearchParams();
   const [initialLogoKey, setInitialLogoKey] = useState<string | null>(null);
   const companyId = searchParams.get("companyId");
@@ -632,3 +633,5 @@ export default function CompanyPage() {
     </div>
   );
 }
+
+export default withAuth(CompanyPage);
