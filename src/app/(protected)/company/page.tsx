@@ -7,7 +7,6 @@ import { useForm } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@apollo/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CompanyFormData, companySchema } from "@/components/validations";
 import { Company } from "@/types";
 import { getItem, removeItem, setItem } from "@/utils/storage";
 import queries from "@/lib/queries";
@@ -17,7 +16,8 @@ import EmployeeSection from "@/components/form-steps/EmployeeSection";
 import AddressSection from "@/components/form-steps/AddressSection";
 import ContactSection from "@/components/form-steps/ContactSection";
 import ExitDialog from "@/components/ui/ExitDialog";
-import { Skeleton } from "@/components/Skeleton";
+import { CompanyFormData, companySchema } from "@/lib/validations";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 const sections = ["company", "employees", "address", "contact"] as const;
 

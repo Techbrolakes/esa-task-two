@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import localFont from "next/font/local";
-import "./globals.css";
+import "../theme/globals.css";
 
 const Satoshi = localFont({
   src: [
