@@ -23,15 +23,9 @@ export const companySchema = z.object({
   website: z.string().url("Invalid website URL").optional(),
   industry: z.string().min(1, "Industry is required"),
   stateOfIncorporation: z.string().min(1, "State of incorporation is required"),
-  numberOfFullTimeEmployees: z.coerce
-    .number()
-    .min(0, "Invalid number of employees")
-    .min(1, "Number of full-time employees is required"),
-  numberOfPartTimeEmployees: z.coerce
-    .number()
-    .min(0, "Invalid number of employees")
-    .min(1, "Number of part-time employees is required"),
-  totalNumberOfEmployees: z.coerce.number().min(0, "Invalid number of employees").min(1, "Total number of employees is required"),
+  numberOfFullTimeEmployees: z.coerce.number().min(0, "Invalid number of employees"),
+  numberOfPartTimeEmployees: z.coerce.number().min(0, "Invalid number of employees"),
+  totalNumberOfEmployees: z.coerce.number().min(0, "Invalid number of employees"),
   facebookCompanyPage: z.string().url("Invalid Facebook URL").optional(),
   linkedInCompanyPage: z.string().url("Invalid LinkedIn URL").optional(),
   logoS3Key: z.string().min(1, "Company logo is required"),

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { setUser } from "@/utils/storage";
 import { useRouter } from "next/navigation";
 import FormInput from "@/components/form/FormInput";
+import { setCookie } from "cookies-next";
 
 const loginSchema = z.object({
   fullname: z.string().min(1, "Fullname is required"),
@@ -33,6 +34,9 @@ const LoginPage = () => {
     try {
       setIsLoading(true);
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      setCookie("user", data.fullname, {
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      });
 
       setUser({
         fullname: data.fullname,
@@ -76,7 +80,7 @@ const LoginPage = () => {
             name="email"
             type="email"
             error={errors.email}
-            placeholder="Enter your email"
+            placeholder="Enter a random email"
           />
 
           {/* Submit Button */}

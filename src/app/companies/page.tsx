@@ -1,15 +1,15 @@
 "use client";
 
 import CompanyDetails from "@/components/CompanyDetails";
-import { withAuth } from "@/hoc/withAuth";
 import { Company } from "@/types";
 import { getItem, removeItem } from "@/utils/storage";
 import { getUser } from "@/utils/storage";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { deleteCookie } from "cookies-next";
 
-function CompaniesPage() {
+export default function CompaniesPage() {
   const { data } = getUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,6 +42,7 @@ function CompaniesPage() {
 
   const handleLogout = () => {
     removeItem("user");
+    deleteCookie("user");
     router.push("/");
   };
 
@@ -109,5 +110,3 @@ function CompaniesPage() {
     </div>
   );
 }
-
-export default withAuth(CompaniesPage);

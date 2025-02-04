@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import mutations from "@/lib/mutations";
 import { useForm } from "react-hook-form";
@@ -14,11 +14,10 @@ import { Company } from "@/types";
 import { getItem, setItem } from "@/utils/storage";
 import queries from "@/lib/queries";
 import Link from "next/link";
-import { withAuth } from "@/hoc/withAuth";
 
 const sections = ["company", "employees", "address", "contact"] as const;
 
-function CompanyPage() {
+export default function CompanyPage() {
   const searchParams = useSearchParams();
   const [initialLogoKey, setInitialLogoKey] = useState<string | null>(null);
   const companyId = searchParams.get("companyId");
@@ -140,10 +139,29 @@ function CompanyPage() {
     },
   });
 
+  useEffect(() => {
+    const fullTime = Number(watch("numberOfFullTimeEmployees")) || 0;
+    const partTime = Number(watch("numberOfPartTimeEmployees")) || 0;
+    setValue("totalNumberOfEmployees", fullTime + partTime);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watch("numberOfFullTimeEmployees"), watch("numberOfPartTimeEmployees"), setValue]);
+
   const getCurrentSectionFields = () => {
     switch (activeSection) {
       case "company":
-        return ["logoS3Key", "legalName", "email", "phone", "industry", "stateOfIncorporation"] as const;
+        return [
+          "logoS3Key",
+          "legalName",
+          "email",
+          "phone",
+          "industry",
+          "stateOfIncorporation",
+          "website",
+          "fax",
+          "facebookCompanyPage",
+          "linkedInCompanyPage",
+        ] as const;
       case "employees":
         return ["numberOfFullTimeEmployees", "numberOfPartTimeEmployees", "totalNumberOfEmployees"] as const;
       case "address":
@@ -175,7 +193,9 @@ function CompanyPage() {
     const currentIndex = sections.indexOf(activeSection);
     if (currentIndex < sections.length - 1) {
       const fieldsToValidate = getCurrentSectionFields();
-      const isValid = await trigger(fieldsToValidate);
+      const isValid = await trigger(fieldsToValidate, {
+        shouldFocus: true,
+      });
 
       if (isValid) {
         setActiveSection(sections[currentIndex + 1]);
@@ -307,21 +327,30 @@ function CompanyPage() {
     switch (activeSection) {
       case "company":
         return (
-          <div className="space-y-1">
+          <div className="space-y-3">
             <LogoUploader
-              onUploadComplete={(key) => setValue("logoS3Key", key)}
-              initialLogoKey={initialLogoKey as string}
+              onUploadComplete={(key) => {
+                setValue("logoS3Key", key, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                  shouldTouch: true,
+                });
+              }}
+              initialLogoKey={watch("logoS3Key") || (initialLogoKey as string)}
               error={errors.logoS3Key}
               label="Company Logo"
             />
 
-            <FormInput<CompanyFormData>
-              label="Legal Name"
-              name="legalName"
-              register={register}
-              error={errors.legalName}
-              placeholder="Enter legal company name"
-            />
+            <div className="pb-3">
+              <FormInput<CompanyFormData>
+                label="Legal Name"
+                name="legalName"
+                register={register}
+                error={errors.legalName}
+                placeholder="Enter legal company name"
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-6">
               <FormInput<CompanyFormData>
                 label="Email"
@@ -339,6 +368,7 @@ function CompanyPage() {
                 placeholder="+1 (555) 000-0000"
               />
             </div>
+
             <div className="grid grid-cols-2 gap-6">
               <FormInput<CompanyFormData>
                 label="Website"
@@ -418,6 +448,7 @@ function CompanyPage() {
               register={register}
               error={errors.totalNumberOfEmployees}
               placeholder="Total employees"
+              disabled={true}
             />
 
             <FormInput<CompanyFormData>
@@ -633,5 +664,3 @@ function CompanyPage() {
     </div>
   );
 }
-
-export default withAuth(CompanyPage);
