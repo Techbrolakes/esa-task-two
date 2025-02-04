@@ -6,31 +6,17 @@ import mutations from "@/lib/mutations";
 import { useForm } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@apollo/client";
-import LogoUploader from "@/components/LogoUploader";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CompanyFormData, companySchema } from "@/components/validations";
 import { Company } from "@/types";
 import { getItem, setItem } from "@/utils/storage";
 import queries from "@/lib/queries";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Building2,
-  Users,
-  MapPin,
-  UserCircle,
-  Mail,
-  Phone,
-  Home,
-  MapPinIcon,
-  Globe,
-  Hash,
-  Facebook,
-  Linkedin,
-  SendHorizonal,
-} from "lucide-react";
-import FancyInput from "@/components/form/FancyInput";
+import { ArrowLeft, ArrowRight, Building2, Users, MapPin, UserCircle, SendHorizonal } from "lucide-react";
+import CompanySection from "@/components/form-steps/CompanySection";
+import EmployeeSection from "@/components/form-steps/EmployeeSection";
+import AddressSection from "@/components/form-steps/AddressSection";
+import ContactSection from "@/components/form-steps/ContactSection";
 
 const sections = ["company", "employees", "address", "contact"] as const;
 
@@ -55,6 +41,8 @@ function CompanyPage() {
     setValue,
   } = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
+    mode: "onChange",
+    criteriaMode: "all",
   });
 
   const router = useRouter();
@@ -168,7 +156,7 @@ function CompanyPage() {
           "linkedInCompanyPage",
         ] as const;
       case "employees":
-        return ["numberOfFullTimeEmployees", "numberOfPartTimeEmployees", "totalNumberOfEmployees"] as const;
+        return ["numberOfFullTimeEmployees", "numberOfPartTimeEmployees", "totalNumberOfEmployees", "otherInformation"] as const;
       case "address":
         return [
           "registeredAddress.street",
@@ -211,10 +199,10 @@ function CompanyPage() {
         );
       case "employees":
         return !!(
-          errors.numberOfFullTimeEmployees ||
-          errors.numberOfPartTimeEmployees ||
-          errors.totalNumberOfEmployees ||
-          errors.otherInformation
+          errors.numberOfFullTimeEmployees?.message ||
+          errors.numberOfPartTimeEmployees?.message ||
+          errors.totalNumberOfEmployees?.message ||
+          errors.otherInformation?.message
         );
       case "address":
         return !!(errors.registeredAddress || errors.mailingAddress || errors.isMailingAddressDifferentFromRegisteredAddress);
@@ -229,8 +217,15 @@ function CompanyPage() {
     const currentIndex = sections.indexOf(activeSection);
     if (currentIndex < sections.length - 1) {
       const fieldsToValidate = getCurrentSectionFields();
-      const isValid = await trigger(fieldsToValidate, { shouldFocus: true });
-      if (isValid) setActiveSection(sections[currentIndex + 1]);
+
+      // Validate the fields
+      const isValid = await trigger(fieldsToValidate, {
+        shouldFocus: true,
+      });
+
+      if (isValid) {
+        setActiveSection(sections[currentIndex + 1]);
+      }
     }
   };
 
@@ -332,336 +327,17 @@ function CompanyPage() {
     switch (activeSection) {
       case "company":
         return (
-          <div className="space-y-6">
-            <div className="p-4 bg-gray-800/40 rounded-lg border border-gray-700">
-              <LogoUploader
-                onUploadComplete={(key) => {
-                  setValue("logoS3Key", key, {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                    shouldTouch: true,
-                  });
-                }}
-                initialLogoKey={watch("logoS3Key") || (initialLogoKey as string)}
-                error={errors.logoS3Key}
-                label="Company Logo"
-              />
-            </div>
-
-            <FancyInput<CompanyFormData>
-              label="Legal Name"
-              name="legalName"
-              register={register}
-              error={errors.legalName}
-              placeholder="Enter legal company name"
-              required
-              startIcon={<Building2 className="w-4 h-4" />}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FancyInput<CompanyFormData>
-                label="Email"
-                name="email"
-                type="email"
-                register={register}
-                error={errors.email}
-                placeholder="company@example.com"
-                required
-                startIcon={<Mail className="w-4 h-4" />}
-              />
-              <FancyInput<CompanyFormData>
-                label="Phone"
-                type="number"
-                name="phone"
-                register={register}
-                error={errors.phone}
-                placeholder="+1 (555) 000-0000"
-                required
-                startIcon={<Phone className="w-4 h-4" />}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FancyInput<CompanyFormData>
-                label="Website"
-                name="website"
-                register={register}
-                error={errors.website}
-                placeholder="https://www.company.com"
-                startIcon={<Globe className="w-4 h-4" />}
-              />
-              <FancyInput<CompanyFormData>
-                label="Fax"
-                name="fax"
-                type="number"
-                register={register}
-                error={errors.fax}
-                placeholder="Enter fax number"
-                startIcon={<Phone className="w-4 h-4" />}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FancyInput<CompanyFormData>
-                label="Industry"
-                name="industry"
-                register={register}
-                error={errors.industry}
-                placeholder="Enter company industry"
-                required
-                startIcon={<Building2 className="w-4 h-4" />}
-              />
-              <FancyInput<CompanyFormData>
-                label="State of Incorporation"
-                name="stateOfIncorporation"
-                register={register}
-                error={errors.stateOfIncorporation}
-                placeholder="Enter state"
-                required
-                startIcon={<MapPinIcon className="w-4 h-4" />}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FancyInput<CompanyFormData>
-                label="Facebook Page"
-                name="facebookCompanyPage"
-                register={register}
-                error={errors.facebookCompanyPage}
-                placeholder="Facebook URL"
-                startIcon={<Facebook className="w-4 h-4" />}
-              />
-              <FancyInput<CompanyFormData>
-                label="LinkedIn Page"
-                name="linkedInCompanyPage"
-                register={register}
-                error={errors.linkedInCompanyPage}
-                placeholder="LinkedIn URL"
-                startIcon={<Linkedin className="w-4 h-4" />}
-              />
-            </div>
-          </div>
+          <CompanySection register={register} errors={errors} watch={watch} setValue={setValue} initialLogoKey={initialLogoKey} />
         );
 
       case "employees":
-        return (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FancyInput<CompanyFormData>
-                label="Full-Time Employees"
-                name="numberOfFullTimeEmployees"
-                type="number"
-                register={register}
-                error={errors.numberOfFullTimeEmployees}
-                placeholder="Enter number"
-                required
-                startIcon={<Users className="w-4 h-4" />}
-              />
-              <FancyInput<CompanyFormData>
-                label="Part-Time Employees"
-                name="numberOfPartTimeEmployees"
-                type="number"
-                register={register}
-                error={errors.numberOfPartTimeEmployees}
-                placeholder="Enter number"
-                required
-                startIcon={<Users className="w-4 h-4" />}
-              />
-            </div>
-
-            <FancyInput<CompanyFormData>
-              label="Total Employees"
-              name="totalNumberOfEmployees"
-              type="number"
-              register={register}
-              error={errors.totalNumberOfEmployees}
-              placeholder="Total will be calculated"
-              disabled
-              startIcon={<Users className="w-4 h-4" />}
-            />
-
-            <div className="p-4 bg-gray-800/40 rounded-lg border border-gray-700">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Additional Information</label>
-              <textarea
-                {...register("otherInformation")}
-                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200"
-                rows={4}
-                placeholder="Enter any additional information about the company"
-              />
-            </div>
-          </div>
-        );
+        return <EmployeeSection register={register} errors={errors} watch={watch} setValue={setValue} />;
 
       case "address":
-        return (
-          <div className="space-y-8">
-            <div className="p-6 bg-gray-800/40 rounded-lg border border-gray-700 space-y-6">
-              <h3 className="text-lg font-semibold text-white">Registered Address</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FancyInput<CompanyFormData>
-                  label="Street"
-                  name="registeredAddress.street"
-                  register={register}
-                  error={errors.registeredAddress?.street}
-                  placeholder="Enter street address"
-                  required
-                  startIcon={<Home className="w-4 h-4" />}
-                />
-                <FancyInput<CompanyFormData>
-                  label="City"
-                  name="registeredAddress.city"
-                  register={register}
-                  error={errors.registeredAddress?.city}
-                  placeholder="Enter city"
-                  required
-                  startIcon={<MapPinIcon className="w-4 h-4" />}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FancyInput<CompanyFormData>
-                  label="State"
-                  name="registeredAddress.state"
-                  register={register}
-                  error={errors.registeredAddress?.state}
-                  placeholder="Enter state"
-                  required
-                  startIcon={<MapPinIcon className="w-4 h-4" />}
-                />
-                <FancyInput<CompanyFormData>
-                  label="Country"
-                  name="registeredAddress.country"
-                  register={register}
-                  error={errors.registeredAddress?.country}
-                  placeholder="Enter country"
-                  required
-                  startIcon={<Globe className="w-4 h-4" />}
-                />
-                <FancyInput<CompanyFormData>
-                  label="Zip Code"
-                  name="registeredAddress.zipCode"
-                  type="number"
-                  register={register}
-                  error={errors.registeredAddress?.zipCode}
-                  placeholder="Enter zip code"
-                  required
-                  startIcon={<Hash className="w-4 h-4" />}
-                />
-              </div>
-            </div>
-
-            <div className="p-6 bg-gray-800/40 rounded-lg border border-gray-700 space-y-6">
-              <h3 className="text-lg font-semibold text-white">Mailing Address</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FancyInput<CompanyFormData>
-                  label="Street"
-                  name="mailingAddress.street"
-                  register={register}
-                  error={errors.mailingAddress?.street}
-                  placeholder="Enter street address"
-                  required
-                  startIcon={<Home className="w-4 h-4" />}
-                />
-                <FancyInput<CompanyFormData>
-                  label="City"
-                  name="mailingAddress.city"
-                  register={register}
-                  error={errors.mailingAddress?.city}
-                  placeholder="Enter city"
-                  required
-                  startIcon={<MapPinIcon className="w-4 h-4" />}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FancyInput<CompanyFormData>
-                  label="State"
-                  name="mailingAddress.state"
-                  register={register}
-                  error={errors.mailingAddress?.state}
-                  placeholder="Enter state"
-                  required
-                  startIcon={<MapPinIcon className="w-4 h-4" />}
-                />
-                <FancyInput<CompanyFormData>
-                  label="Country"
-                  name="mailingAddress.country"
-                  register={register}
-                  error={errors.mailingAddress?.country}
-                  placeholder="Enter country"
-                  required
-                  startIcon={<Globe className="w-4 h-4" />}
-                />
-                <FancyInput<CompanyFormData>
-                  label="Zip Code"
-                  type="number"
-                  name="mailingAddress.zipCode"
-                  register={register}
-                  error={errors.mailingAddress?.zipCode}
-                  placeholder="Enter zip code"
-                  required
-                  startIcon={<Hash className="w-4 h-4" />}
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-4 bg-gray-800/40 rounded-lg border border-gray-700">
-              <input
-                type="checkbox"
-                {...register("isMailingAddressDifferentFromRegisteredAddress")}
-                className="w-4 h-4 rounded border-gray-700 text-blue-500 focus:ring-blue-500/50"
-              />
-              <label className="text-sm font-medium text-gray-300">Mailing address is different from registered address</label>
-            </div>
-          </div>
-        );
+        return <AddressSection register={register} errors={errors} watch={watch} />;
 
       case "contact":
-        return (
-          <div className="p-6 bg-gray-800/40 rounded-lg border border-gray-700 space-y-6">
-            <h3 className="text-lg font-semibold text-white">Primary Contact Person</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FancyInput<CompanyFormData>
-                label="First Name"
-                name="primaryContactPerson.firstName"
-                register={register}
-                error={errors.primaryContactPerson?.firstName}
-                placeholder="Enter first name"
-                required
-                startIcon={<UserCircle className="w-4 h-4" />}
-              />
-              <FancyInput<CompanyFormData>
-                label="Last Name"
-                name="primaryContactPerson.lastName"
-                register={register}
-                error={errors.primaryContactPerson?.lastName}
-                placeholder="Enter last name"
-                required
-                startIcon={<UserCircle className="w-4 h-4" />}
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FancyInput<CompanyFormData>
-                label="Email"
-                name="primaryContactPerson.email"
-                type="email"
-                register={register}
-                error={errors.primaryContactPerson?.email}
-                placeholder="contact@example.com"
-                required
-                startIcon={<Mail className="w-4 h-4" />}
-              />
-              <FancyInput<CompanyFormData>
-                label="Phone"
-                name="primaryContactPerson.phone"
-                type="number"
-                register={register}
-                error={errors.primaryContactPerson?.phone}
-                placeholder="+1 (555) 000-0000"
-                required
-                startIcon={<Phone className="w-4 h-4" />}
-              />
-            </div>
-          </div>
-        );
+        return <ContactSection register={register} errors={errors} />;
     }
   };
 
@@ -724,10 +400,13 @@ function CompanyPage() {
               <ArrowLeft size={18} />
               Previous
             </button>
-
-            {activeSection === sections[sections.length - 1] ? (
+            {activeSection === "contact" ? (
               <button
                 type="submit"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSubmit(onSubmit)();
+                }}
                 disabled={creating || updating}
                 className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-6 py-2.5 rounded-lg transition-colors duration-200 font-medium flex items-center gap-2"
               >
@@ -746,7 +425,10 @@ function CompanyPage() {
             ) : (
               <button
                 type="button"
-                onClick={goToNextSection}
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToNextSection();
+                }}
                 className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-6 py-2.5 rounded-lg transition-colors duration-200 font-medium flex items-center gap-2"
               >
                 Next

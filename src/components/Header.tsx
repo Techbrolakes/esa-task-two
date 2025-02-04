@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import { removeItem } from "@/utils/storage";
 import { deleteCookie } from "cookies-next";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = () => {
     removeItem("user");
@@ -21,8 +22,10 @@ const Header = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const shouldShowCreateButton = pathname !== "/company";
+
   return (
-    <header className="bg-gradient-to-br text-white from-black via-[#060C21] to-black animate-gradient-x shadow-sm border-b border-b-gray-50">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-br text-white from-black via-[#060C21] to-black animate-gradient-x shadow-sm border-b border-b-gray-50">
       <div className="py-4 md:py-5 max-w-[85%] mx-auto">
         <div className="flex justify-between items-center">
           <Link
@@ -42,12 +45,14 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex gap-4">
-            <Link
-              href="/company"
-              className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-6 py-2.5 rounded-lg transition-colors duration-200 font-medium flex items-center gap-2"
-            >
-              Create Company
-            </Link>
+            {shouldShowCreateButton && (
+              <Link
+                href="/company"
+                className="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-6 py-2.5 rounded-lg transition-colors duration-200 font-medium flex items-center gap-2"
+              >
+                Create Company
+              </Link>
+            )}
             <button
               onClick={handleLogout}
               className="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-6 py-2.5 rounded-lg transition-colors duration-200 font-medium flex items-center gap-2"
@@ -60,13 +65,15 @@ const Header = () => {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-2 space-y-3">
-            <Link
-              href="/company"
-              className="block bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors text-center"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Create Company
-            </Link>
+            {shouldShowCreateButton && (
+              <Link
+                href="/company"
+                className="block bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors text-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Create Company
+              </Link>
+            )}
             <button
               onClick={() => {
                 handleLogout();
