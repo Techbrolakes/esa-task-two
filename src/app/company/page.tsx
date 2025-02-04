@@ -4,16 +4,23 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import mutations from "@/lib/mutations";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import { useMutation } from "@apollo/client";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMutation, useQuery } from "@apollo/client";
 import FormInput from "@/components/form/FormInput";
 import LogoUploader from "@/components/LogoUploader";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CompanyFormData, companySchema } from "@/components/validations";
+import { Company } from "@/types";
+import { getItem, setItem } from "@/utils/storage";
+import queries from "@/lib/queries";
+import Link from "next/link";
 
 const sections = ["company", "employees", "address", "contact"] as const;
 
 export default function CompanyPage() {
+  const searchParams = useSearchParams();
+  const [initialLogoKey, setInitialLogoKey] = useState<string | null>(null);
+  const companyId = searchParams.get("companyId");
   const {
     register,
     handleSubmit,
@@ -30,16 +37,108 @@ export default function CompanyPage() {
   const [activeSection, setActiveSection] = useState<(typeof sections)[number]>("company");
   const isDifferentMailingAddress = watch("isMailingAddressDifferentFromRegisteredAddress");
 
-  const [createCompany, { loading }] = useMutation(mutations.CREATE_COMPANY, {
-    onCompleted: () => {
-      reset();
-      toast.success("Company created successfully!");
+  const { loading: fetchingCompany } = useQuery(queries.GET_COMPANY, {
+    variables: { getCompanyId: companyId },
+    skip: !companyId,
+    onCompleted: (data) => {
+      if (data?.getCompany) {
+        setInitialLogoKey(data.getCompany.logoS3Key || null);
+
+        reset({
+          legalName: data.getCompany.legalName,
+          email: data.getCompany.email,
+          phone: data.getCompany.phone,
+          fax: data.getCompany.fax || "",
+          website: data.getCompany.website || "",
+          industry: data.getCompany.industry,
+          stateOfIncorporation: data.getCompany.stateOfIncorporation,
+          numberOfFullTimeEmployees: data.getCompany.numberOfFullTimeEmployees,
+          numberOfPartTimeEmployees: data.getCompany.numberOfPartTimeEmployees,
+          totalNumberOfEmployees: data.getCompany.totalNumberOfEmployees,
+          facebookCompanyPage: data.getCompany.facebookCompanyPage || "",
+          linkedInCompanyPage: data.getCompany.linkedInCompanyPage || "",
+          logoS3Key: data.getCompany.logoS3Key || "",
+          otherInformation: data.getCompany.otherInformation || "",
+          isMailingAddressDifferentFromRegisteredAddress: data.getCompany.isMailingAddressDifferentFromRegisteredAddress,
+          registeredAddress: {
+            street: data.getCompany.registeredAddress.street,
+            city: data.getCompany.registeredAddress.city,
+            state: data.getCompany.registeredAddress.state,
+            country: data.getCompany.registeredAddress.country,
+            zipCode: data.getCompany.registeredAddress.zipCode,
+          },
+          mailingAddress: {
+            street: data.getCompany.mailingAddress?.street || "",
+            city: data.getCompany.mailingAddress?.city || "",
+            state: data.getCompany.mailingAddress?.state || "",
+            country: data.getCompany.mailingAddress?.country || "",
+            zipCode: data.getCompany.mailingAddress?.zipCode || "",
+          },
+          primaryContactPerson: {
+            firstName: data.getCompany.primaryContactPerson.firstName,
+            lastName: data.getCompany.primaryContactPerson.lastName,
+            email: data.getCompany.primaryContactPerson.email,
+            phone: data.getCompany.primaryContactPerson.phone,
+          },
+        });
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to fetch company details");
       router.push("/companies");
+    },
+  });
+
+  const [createCompany, { loading: creating }] = useMutation(mutations.CREATE_COMPANY, {
+    onCompleted: (data) => {
+      if (data?.createCompany?.company) {
+        const existingCompanies = getItem<Company[]>("companies").data || [];
+
+        const companyExists = existingCompanies.some((company: Company) => company.id === data.createCompany.company.id);
+
+        if (!companyExists) {
+          const updatedCompanies = [...existingCompanies, data.createCompany.company];
+          const result = setItem("companies", updatedCompanies);
+
+          if (result.error) {
+            toast.error("Company created but failed to save locally");
+            return;
+          }
+        }
+
+        reset();
+        toast.success("Company created successfully!");
+        router.push("/companies");
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create company");
     },
   });
+
+  const [updateCompany, { loading: updating }] = useMutation(mutations.UPDATE_COMPANY, {
+    onCompleted: (data) => {
+      if (data?.updateCompany?.company) {
+        const existingCompanies = getItem<Company[]>("companies").data || [];
+        const updatedCompanies = existingCompanies.map((company) =>
+          company.id === data.updateCompany.company.id ? data.updateCompany.company : company
+        );
+
+        const result = setItem("companies", updatedCompanies);
+        if (result.error) {
+          toast.error("Company updated but failed to save locally");
+          return;
+        }
+
+        toast.success("Company updated successfully!");
+        router.push("/companies");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update company");
+    },
+  });
+
   const getCurrentSectionFields = () => {
     switch (activeSection) {
       case "company":
@@ -53,6 +152,11 @@ export default function CompanyPage() {
           "registeredAddress.state",
           "registeredAddress.country",
           "registeredAddress.zipCode",
+          "mailingAddress.street",
+          "mailingAddress.city",
+          "mailingAddress.state",
+          "mailingAddress.country",
+          "mailingAddress.zipCode",
         ] as const;
       case "contact":
         return [
@@ -117,60 +221,86 @@ export default function CompanyPage() {
   };
 
   const onSubmit = async (data: CompanyFormData) => {
-    try {
-      await createCompany({
-        variables: {
-          input: {
-            email: data.email,
-            facebookCompanyPage: data.facebookCompanyPage || null,
-            fax: data.fax || null,
-            industry: data.industry,
-            isMailingAddressDifferentFromRegisteredAddress: Boolean(data.isMailingAddressDifferentFromRegisteredAddress),
-            legalName: data.legalName,
-            linkedInCompanyPage: data.linkedInCompanyPage || null,
-            logoS3Key: data.logoS3Key || null,
-            mailingAddress: isDifferentMailingAddress
-              ? {
-                  city: data.mailingAddress.city,
-                  country: data.mailingAddress.country,
-                  state: data.mailingAddress.state,
-                  street: data.mailingAddress.street,
-                  zipCode: data.mailingAddress.zipCode,
-                }
-              : {
-                  city: data.registeredAddress.city,
-                  country: data.registeredAddress.country,
-                  state: data.registeredAddress.state,
-                  street: data.registeredAddress.street,
-                  zipCode: data.registeredAddress.zipCode,
-                },
-            numberOfFullTimeEmployees: Number(data.numberOfFullTimeEmployees),
-            numberOfPartTimeEmployees: Number(data.numberOfPartTimeEmployees),
-            otherInformation: data.otherInformation || null,
-            phone: data.phone,
-            primaryContactPerson: {
-              email: data.primaryContactPerson.email,
-              firstName: data.primaryContactPerson.firstName,
-              lastName: data.primaryContactPerson.lastName,
-              phone: data.primaryContactPerson.phone,
-            },
-            registeredAddress: {
-              city: data.registeredAddress.city,
-              country: data.registeredAddress.country,
-              state: data.registeredAddress.state,
-              street: data.registeredAddress.street,
-              zipCode: data.registeredAddress.zipCode,
-            },
-            stateOfIncorporation: data.stateOfIncorporation,
-            totalNumberOfEmployees: Number(data.totalNumberOfEmployees),
-            website: data.website || null,
+    const input = {
+      email: data.email,
+      facebookCompanyPage: data.facebookCompanyPage || null,
+      fax: data.fax || null,
+      industry: data.industry,
+      isMailingAddressDifferentFromRegisteredAddress: Boolean(data.isMailingAddressDifferentFromRegisteredAddress),
+      legalName: data.legalName,
+      linkedInCompanyPage: data.linkedInCompanyPage || null,
+      logoS3Key: data.logoS3Key || null,
+      mailingAddress: isDifferentMailingAddress
+        ? {
+            city: data.mailingAddress.city,
+            country: data.mailingAddress.country,
+            state: data.mailingAddress.state,
+            street: data.mailingAddress.street,
+            zipCode: data.mailingAddress.zipCode,
+          }
+        : {
+            city: data.registeredAddress.city,
+            country: data.registeredAddress.country,
+            state: data.registeredAddress.state,
+            street: data.registeredAddress.street,
+            zipCode: data.registeredAddress.zipCode,
           },
-        },
-      });
+      numberOfFullTimeEmployees: Number(data.numberOfFullTimeEmployees),
+      numberOfPartTimeEmployees: Number(data.numberOfPartTimeEmployees),
+      otherInformation: data.otherInformation || null,
+      phone: data.phone,
+      primaryContactPerson: {
+        email: data.primaryContactPerson.email,
+        firstName: data.primaryContactPerson.firstName,
+        lastName: data.primaryContactPerson.lastName,
+        phone: data.primaryContactPerson.phone,
+      },
+      registeredAddress: {
+        city: data.registeredAddress.city,
+        country: data.registeredAddress.country,
+        state: data.registeredAddress.state,
+        street: data.registeredAddress.street,
+        zipCode: data.registeredAddress.zipCode,
+      },
+      stateOfIncorporation: data.stateOfIncorporation,
+      totalNumberOfEmployees: Number(data.totalNumberOfEmployees),
+      website: data.website || null,
+    };
+
+    try {
+      if (companyId) {
+        await updateCompany({
+          variables: {
+            companyId,
+            input,
+          },
+        });
+      } else {
+        await createCompany({
+          variables: { input },
+        });
+      }
     } catch (error) {
       console.error(error);
     }
   };
+
+  if (companyId && fetchingCompany) {
+    return (
+      <div className="min-h-screen py-6 text-white p-4 bg-gradient-to-br from-black via-[#060C21] to-black animate-gradient-x">
+        <div className="max-w-7xl mx-auto p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-700 rounded w-1/4"></div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-700 rounded w-2/3"></div>
+              <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderSection = () => {
     switch (activeSection) {
@@ -179,7 +309,7 @@ export default function CompanyPage() {
           <div className="space-y-1">
             <LogoUploader
               onUploadComplete={(key) => setValue("logoS3Key", key)}
-              initialLogoKey={watch("logoS3Key")}
+              initialLogoKey={initialLogoKey as string}
               error={errors.logoS3Key}
               label="Company Logo"
             />
@@ -344,58 +474,58 @@ export default function CompanyPage() {
               </div>
             </div>
 
-            <FormInput<CompanyFormData>
-              label="Different Mailing Address?"
-              name="isMailingAddressDifferentFromRegisteredAddress"
-              type="checkbox"
-              register={register}
-              error={errors.isMailingAddressDifferentFromRegisteredAddress}
-            />
-
-            {isDifferentMailingAddress && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Mailing Address</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormInput<CompanyFormData>
-                    label="Street"
-                    name="mailingAddress.street"
-                    register={register}
-                    error={errors.mailingAddress?.street}
-                    placeholder="Street address"
-                  />
-                  <FormInput<CompanyFormData>
-                    label="City"
-                    name="mailingAddress.city"
-                    register={register}
-                    error={errors.mailingAddress?.city}
-                    placeholder="City"
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <FormInput<CompanyFormData>
-                    label="State"
-                    name="mailingAddress.state"
-                    register={register}
-                    error={errors.mailingAddress?.state}
-                    placeholder="State"
-                  />
-                  <FormInput<CompanyFormData>
-                    label="Country"
-                    name="mailingAddress.country"
-                    register={register}
-                    error={errors.mailingAddress?.country}
-                    placeholder="Country"
-                  />
-                  <FormInput<CompanyFormData>
-                    label="Zip Code"
-                    name="mailingAddress.zipCode"
-                    register={register}
-                    error={errors.mailingAddress?.zipCode}
-                    placeholder="Zip code"
-                  />
-                </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Mailing Address</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <FormInput<CompanyFormData>
+                  label="Street"
+                  name="mailingAddress.street"
+                  register={register}
+                  error={errors.mailingAddress?.street}
+                  placeholder="Street address"
+                />
+                <FormInput<CompanyFormData>
+                  label="City"
+                  name="mailingAddress.city"
+                  register={register}
+                  error={errors.mailingAddress?.city}
+                  placeholder="City"
+                />
               </div>
-            )}
+              <div className="grid grid-cols-3 gap-4">
+                <FormInput<CompanyFormData>
+                  label="State"
+                  name="mailingAddress.state"
+                  register={register}
+                  error={errors.mailingAddress?.state}
+                  placeholder="State"
+                />
+                <FormInput<CompanyFormData>
+                  label="Country"
+                  name="mailingAddress.country"
+                  register={register}
+                  error={errors.mailingAddress?.country}
+                  placeholder="Country"
+                />
+                <FormInput<CompanyFormData>
+                  label="Zip Code"
+                  name="mailingAddress.zipCode"
+                  register={register}
+                  error={errors.mailingAddress?.zipCode}
+                  placeholder="Zip code"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-4">
+              <label className="font-medium pb-1.5">is the mailing address different from the registered address?</label>
+              <FormInput<CompanyFormData>
+                name="isMailingAddressDifferentFromRegisteredAddress"
+                type="checkbox"
+                register={register}
+                error={errors.isMailingAddressDifferentFromRegisteredAddress}
+              />
+            </div>
           </div>
         );
       case "contact":
@@ -442,6 +572,13 @@ export default function CompanyPage() {
   return (
     <div className="min-h-screen py-6 text-white p-4 bg-gradient-to-br from-black via-[#060C21] to-black animate-gradient-x">
       <form onSubmit={handleSubmit(onSubmit)} className="max-w-7xl mx-auto space-y-8 p-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold">{companyId ? "Update Company" : "Create Company"}</h1>
+          <Link href="/companies" className="text-blue-500 hover:text-blue-400">
+            ← Back to Companies
+          </Link>
+        </div>
+
         <div className="grid grid-cols-4 gap-4 mb-6">
           {sections.map((section) => (
             <button
@@ -477,8 +614,12 @@ export default function CompanyPage() {
             </button>
 
             {activeSection === sections[sections.length - 1] ? (
-              <button type="submit" className="py-2 px-6 rounded-lg bg-green-600 hover:bg-green-700">
-                {loading ? "Loading..." : "Submit"}
+              <button
+                type="submit"
+                className="py-2 px-6 rounded-lg bg-green-600 hover:bg-green-700"
+                disabled={creating || updating}
+              >
+                {creating || updating ? "Loading..." : companyId ? "Update" : "Submit"}
               </button>
             ) : (
               <button type="button" onClick={goToNextSection} className="py-2 px-6 rounded-lg bg-blue-600 hover:bg-blue-700">

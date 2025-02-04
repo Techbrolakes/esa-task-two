@@ -1,7 +1,7 @@
 import { UseFormRegister, FieldError, Path } from "react-hook-form";
 
 export interface FormInputProps<TFormValues extends object> {
-  label: string;
+  label?: string;
   error?: FieldError;
   register: UseFormRegister<TFormValues>;
   name: Path<TFormValues>;
@@ -21,7 +21,7 @@ const FormInput = <TFormValues extends object>({
 }: FormInputProps<TFormValues>) => {
   return (
     <div className="space-y-2 text-sm">
-      <label className="font-medium">{label}</label>
+      {label && <label className="font-medium">{label}</label>}
       <input
         type={type}
         {...register(name)}

@@ -36,7 +36,7 @@ export const companySchema = z.object({
   linkedInCompanyPage: z.string().url("Invalid LinkedIn URL").optional(),
   logoS3Key: z.string().min(1, "Company logo is required"),
   otherInformation: z.string().optional(),
-  isMailingAddressDifferentFromRegisteredAddress: z.boolean(),
+  isMailingAddressDifferentFromRegisteredAddress: z.coerce.boolean(),
   registeredAddress: addressSchema,
   mailingAddress: addressSchema,
   primaryContactPerson: primaryContactSchema,
