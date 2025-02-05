@@ -3,9 +3,9 @@
 import React from "react";
 import { UseFormRegister, FieldErrors, Control } from "react-hook-form";
 import { UserCircle, Mail } from "lucide-react";
-import { CompanyFormData } from "@/components/validations";
 import FancyInput from "@/components/form/FancyInput";
 import PhoneInputField from "../form/PhoneInputField";
+import { CompanyFormData } from "@/lib/validations";
 
 interface ContactSectionProps {
   register: UseFormRegister<CompanyFormData>;

@@ -3,8 +3,8 @@
 import React from "react";
 import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from "react-hook-form";
 import { Users } from "lucide-react";
-import { CompanyFormData } from "@/components/validations";
 import FancyInput from "@/components/form/FancyInput";
+import { CompanyFormData } from "@/lib/validations";
 
 interface EmployeeSectionProps {
   register: UseFormRegister<CompanyFormData>;
