@@ -129,7 +129,3 @@ The project uses Vitest with React Testing Library for testing. Test files are c
 - TypeScript for type safety
 - Prettier for code formatting
 - Vitest for unit and integration testing
-
-## License
-
-Private project - All rights reserved
