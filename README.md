@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FE-2024-12-i - ESA Task Two 
+
+A modern Next.js application with Apollo Client integration and comprehensive form handling.
+
+## Tech Stack
+
+- `Frontend Framework`
+  - Next.js 15.1.6
+  - React ^19.0.0
+  - TypeScript ^5
+
+- `Data Management`
+  - Apollo Client ^3.12.8
+  - GraphQL ^16.10.0
+
+- `Form Handling`
+  - React Hook Form ^7.54.2
+  - Zod Validation ^3.24.1
+  - React Phone Number Input ^3.4.11
+
+- `Styling`
+  - TailwindCSS ^3.4.1
+  - CLSX ^2.1.1
+  - Tailwind Merge ^3.0.1
+
+- `Testing`
+  - Vitest ^3.0.5
+  - Testing Library
+    - React ^16.2.0
+    - Jest DOM ^6.6.3
+    - User Event ^14.6.1
+
+## Project Structure
+
+- `src/`
+  - `app/`
+    - `(protected)/`
+      - `companies/`
+      - `company/`
+      - `layout.tsx`
+      - `page.tsx`
+    
+  - `components/`
+    - `form/`          # Form-specific components
+    - `form-steps/`    # Multi-step form components
+    - `reusables/`     # Shared components
+    - `ui/`           # UI primitives
+    
+  - `icons/`
+    - Social media icons (Facebook, LinkedIn)
+    
+  - `lib/`            # Utility functions
+  
+  - `providers/`
+    - `ApolloProvider.tsx`
+    
+  - `tests/`          # Test files
+  
+  - `theme/`
+    - `globals.css`
+    - `phone-input.css`
+    
+  - `types/`          # TypeScript definitions
+  
+  - `utils/`
+    - `classNames.ts`
+    - `storage.ts`
+    - `middleware.ts`
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js (Latest LTS version recommended)
+- PNPM package manager
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Start development server with Turbopack
+pnpm dev
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Run linter
+pnpm lint
 
-## Learn More
+# Run tests
+pnpm test
 
-To learn more about Next.js, take a look at the following resources:
+# Run tests with UI
+pnpm test:ui
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Generate test coverage
+pnpm test:coverage
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Watch mode for tests
+pnpm test:watch
+```
 
-## Deploy on Vercel
+### Build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm build
+pnpm start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Features
+
+- Protected routes with authentication
+- GraphQL integration via Apollo Client
+- Form handling with validation
+- Phone number input with formatting
+- Social media integration
+- Responsive UI components
+- Comprehensive test coverage
+
+## Testing
+
+The project uses Vitest with React Testing Library for testing. Test files are colocated with their components using the `.test.tsx` extension.
+
+## Code Quality
+
+- ESLint with Next.js configuration
+- TypeScript for type safety
+- Prettier for code formatting
+- Vitest for unit and integration testing
+
+## License
+
+Private project - All rights reserved
