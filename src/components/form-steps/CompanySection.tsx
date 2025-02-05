@@ -4,7 +4,7 @@ import React from "react";
 import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue, Control } from "react-hook-form";
 import { Building2, Mail, Phone, Globe, MapPinIcon } from "lucide-react";
 import FancyInput from "@/components/form/FancyInput";
-import LogoUploader from "@/components/LogoUploader";
+import LogoUploader from "@/components/form/LogoUploader";
 import LinkedinIcon from "@/icons/LinkedinIcon";
 import FacebookIcon from "@/icons/FacebookIcon";
 import PhoneInputField from "../form/PhoneInputField";

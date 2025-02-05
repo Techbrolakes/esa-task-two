@@ -1,7 +1,7 @@
 import ApolloClientProvider from "@/providers/ApolloProvider";
 import "react-toastify/dist/ReactToastify.css";
 import { Suspense } from "react";
-import Header from "@/components/Header";
+import Header from "@/components/reuseables/Header";
 
 export default function ProtectedLayout({
   children,

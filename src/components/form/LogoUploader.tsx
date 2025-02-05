@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 
 interface LogoUploaderProps {
   onUploadComplete: (s3Key: string) => void;
-  initialLogoKey?: string; // Pre-filled logo key
+  initialLogoKey?: string; 
   error?: { message?: string };
   label?: string;
 }
@@ -62,7 +62,6 @@ export default function LogoUploader({ onUploadComplete, initialLogoKey, error, 
         },
       });
 
-      // Upload file to signed URL
       await fetch(data.getSignedUploadUrl.url, {
         method: "PUT",
         body: file,
@@ -71,14 +70,12 @@ export default function LogoUploader({ onUploadComplete, initialLogoKey, error, 
         },
       });
 
-      // Immediately update preview without needing a refresh
       const fileReader = new FileReader();
       fileReader.onload = () => {
         setLogoUrl(fileReader.result as string);
       };
       fileReader.readAsDataURL(file);
 
-      // Update state with new S3 key
       onUploadComplete(data.getSignedUploadUrl.key);
     } catch (error) {
       console.error("Upload failed:", error);

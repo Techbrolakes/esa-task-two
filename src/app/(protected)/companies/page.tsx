@@ -1,8 +1,8 @@
 "use client";
 
-import CompanyCard from "@/components/CompanyCard";
-import CompanyDetails from "@/components/CompanyDetails";
-import UserGreeting from "@/components/UserGreeting";
+import CompanyCard from "@/components/reuseables/CompanyCard";
+import CompanyDetails from "@/components/reuseables/CompanyDetails";
+import UserGreeting from "@/components/reuseables/UserGreeting";
 import { Company } from "@/types";
 import { getItem } from "@/utils/storage";
 import { useSearchParams } from "next/navigation";
