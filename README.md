@@ -1,24 +1,28 @@
-# FE-2024-12-i - ESA Task Two 
+# FE-2024-12-i - ESA Task Two
 
 A modern Next.js application with Apollo Client integration and comprehensive form handling.
 
 ## Tech Stack
 
 - `Frontend Framework`
+
   - Next.js 15.1.6
   - React ^19.0.0
   - TypeScript ^5
 
 - `Data Management`
+
   - Apollo Client ^3.12.8
   - GraphQL ^16.10.0
 
 - `Form Handling`
+
   - React Hook Form ^7.54.2
   - Zod Validation ^3.24.1
   - React Phone Number Input ^3.4.11
 
 - `Styling`
+
   - TailwindCSS ^3.4.1
   - CLSX ^2.1.1
   - Tailwind Merge ^3.0.1
@@ -33,35 +37,31 @@ A modern Next.js application with Apollo Client integration and comprehensive fo
 ## Project Structure
 
 - `src/`
+
   - `app/`
     - `(protected)/`
       - `companies/`
       - `company/`
       - `layout.tsx`
       - `page.tsx`
-    
   - `components/`
-    - `form/`          # Form-specific components
-    - `form-steps/`    # Multi-step form components
-    - `reusables/`     # Shared components
-    - `ui/`           # UI primitives
-    
+    - `form/` # Form-specific components
+    - `form-steps/` # Multi-step form components
+    - `reusables/` # Shared components
+    - `ui/` # UI primitives
   - `icons/`
     - Social media icons (Facebook, LinkedIn)
-    
-  - `lib/`            # Utility functions
-  
+  - `lib/` # Utility functions
+
   - `providers/`
     - `ApolloProvider.tsx`
-    
-  - `tests/`          # Test files
-  
+  - `tests/` # Test files
+
   - `theme/`
     - `globals.css`
     - `phone-input.css`
-    
-  - `types/`          # TypeScript definitions
-  
+  - `types/` # TypeScript definitions
+
   - `utils/`
     - `classNames.ts`
     - `storage.ts`
@@ -129,3 +129,16 @@ The project uses Vitest with React Testing Library for testing. Test files are c
 - TypeScript for type safety
 - Prettier for code formatting
 - Vitest for unit and integration testing
+
+## Screenshots
+
+![Screenshot](/public/screenshots/1.png)
+![Screenshot](/public/screenshots/2.png)
+![Screenshot](/public/screenshots/3.png)
+![Screenshot](/public/screenshots/4.png)
+![Screenshot](/public/screenshots/5.png)
+![Screenshot](/public/screenshots/6.png)
+![Screenshot](/public/screenshots/7.png)
+![Screenshot](/public/screenshots/8.png)
+![Screenshot](/public/screenshots/9.png)
+![Screenshot](/public/screenshots/10.png)
