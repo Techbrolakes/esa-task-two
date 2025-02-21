@@ -5,17 +5,30 @@ import { removeItem } from "@/utils/storage";
 import { deleteCookie } from "cookies-next";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Loader, Menu, X } from "lucide-react"; // Added Loader import
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const pathname = usePathname();
 
-  const handleLogout = () => {
-    removeItem("user");
-    deleteCookie("user");
-    router.push("/");
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+
+      // Clear all auth data
+      removeItem("user");
+      deleteCookie("user");
+
+      // Force a complete page reload to clear all states
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Fallback
+      window.location.href = "/";
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const toggleMenu = () => {
@@ -23,6 +36,19 @@ const Header = () => {
   };
 
   const shouldShowCreateButton = pathname !== "/company";
+
+  const LogoutButton = ({ className }: { className?: string }) => (
+    <button onClick={handleLogout} disabled={isLoggingOut} className={className}>
+      {isLoggingOut ? (
+        <>
+          <Loader className="animate-spin" size={18} />
+          <span>Logging out...</span>
+        </>
+      ) : (
+        "Logout"
+      )}
+    </button>
+  );
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-br text-white from-black via-[#060C21] to-black animate-gradient-x shadow-sm border-b border-b-gray-50">
@@ -53,12 +79,7 @@ const Header = () => {
                 Create Company
               </Link>
             )}
-            <button
-              onClick={handleLogout}
-              className="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-6 py-2.5 rounded-lg transition-colors duration-200 font-medium flex items-center gap-2"
-            >
-              Logout
-            </button>
+            <LogoutButton className="bg-red-500/10 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-red-400 px-6 py-2.5 rounded-lg transition-colors duration-200 font-medium flex items-center gap-2" />
           </div>
         </div>
 
@@ -74,15 +95,7 @@ const Header = () => {
                 Create Company
               </Link>
             )}
-            <button
-              onClick={() => {
-                handleLogout();
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors"
-            >
-              Logout
-            </button>
+            <LogoutButton className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600 px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2" />
           </div>
         )}
       </div>

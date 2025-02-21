@@ -70,13 +70,15 @@ function CompanyPage() {
           website: data.getCompany.website || "",
           industry: data.getCompany.industry,
           stateOfIncorporation: data.getCompany.stateOfIncorporation,
-          numberOfFullTimeEmployees: data.getCompany.numberOfFullTimeEmployees,
-          numberOfPartTimeEmployees: data.getCompany.numberOfPartTimeEmployees,
-          totalNumberOfEmployees: data.getCompany.totalNumberOfEmployees,
+          employees: {
+            numberOfFullTimeEmployees: data.getCompany.numberOfFullTimeEmployees,
+            numberOfPartTimeEmployees: data.getCompany.numberOfPartTimeEmployees,
+            totalNumberOfEmployees: data.getCompany.totalNumberOfEmployees,
+            otherInformation: data.getCompany.otherInformation || "",
+          },
           facebookCompanyPage: data.getCompany.facebookCompanyPage || "",
           linkedInCompanyPage: data.getCompany.linkedInCompanyPage || "",
           logoS3Key: data.getCompany.logoS3Key || "",
-          otherInformation: data.getCompany.otherInformation || "",
           isMailingAddressDifferentFromRegisteredAddress: data.getCompany.isMailingAddressDifferentFromRegisteredAddress,
           registeredAddress: data.getCompany.registeredAddress,
           mailingAddress: data.getCompany.mailingAddress || {
@@ -212,11 +214,12 @@ function CompanyPage() {
   });
 
   useEffect(() => {
-    const fullTime = Number(watch("numberOfFullTimeEmployees")) || 0;
-    const partTime = Number(watch("numberOfPartTimeEmployees")) || 0;
-    setValue("totalNumberOfEmployees", fullTime + partTime);
+    const fullTime = Number(watch("employees.numberOfFullTimeEmployees")) || 0;
+    const partTime = Number(watch("employees.numberOfPartTimeEmployees")) || 0;
+    setValue("employees.totalNumberOfEmployees", (Number(fullTime) + Number(partTime)).toString());
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [watch("numberOfFullTimeEmployees"), watch("numberOfPartTimeEmployees"), setValue]);
+  }, [watch("employees.numberOfFullTimeEmployees"), watch("employees.numberOfPartTimeEmployees"), setValue]);
 
   const getCurrentSectionFields = () => {
     switch (activeSection) {
@@ -234,7 +237,11 @@ function CompanyPage() {
           "linkedInCompanyPage",
         ] as const;
       case "employees":
-        return ["numberOfFullTimeEmployees", "numberOfPartTimeEmployees", "totalNumberOfEmployees", "otherInformation"] as const;
+        return [
+          "employees.numberOfFullTimeEmployees",
+          "employees.numberOfPartTimeEmployees",
+          "employees.otherInformation",
+        ] as const;
       case "address":
         return [
           "registeredAddress.street",
@@ -276,12 +283,7 @@ function CompanyPage() {
           errors.linkedInCompanyPage
         );
       case "employees":
-        return !!(
-          errors.numberOfFullTimeEmployees?.message ||
-          errors.numberOfPartTimeEmployees?.message ||
-          errors.totalNumberOfEmployees?.message ||
-          errors.otherInformation?.message
-        );
+        return !!errors.employees;
       case "address":
         return !!(errors.registeredAddress || errors.mailingAddress || errors.isMailingAddressDifferentFromRegisteredAddress);
       case "contact":
@@ -296,12 +298,13 @@ function CompanyPage() {
     if (currentIndex < sections.length - 1) {
       const fieldsToValidate = getCurrentSectionFields();
 
-      const isValid = await trigger(fieldsToValidate, {
-        shouldFocus: true,
-      });
-
-      if (isValid) {
-        setActiveSection(sections[currentIndex + 1]);
+      try {
+        const isValid = await trigger(fieldsToValidate);
+        if (isValid) {
+          setActiveSection(sections[currentIndex + 1]);
+        }
+      } catch (error) {
+        console.error("Validation error:", error);
       }
     }
   };
@@ -338,9 +341,9 @@ function CompanyPage() {
             street: data.registeredAddress.street,
             zipCode: data.registeredAddress.zipCode,
           },
-      numberOfFullTimeEmployees: Number(data.numberOfFullTimeEmployees),
-      numberOfPartTimeEmployees: Number(data.numberOfPartTimeEmployees),
-      otherInformation: data.otherInformation || null,
+      numberOfFullTimeEmployees: Number(data.employees.numberOfFullTimeEmployees),
+      numberOfPartTimeEmployees: Number(data.employees.numberOfPartTimeEmployees),
+      otherInformation: data.employees.otherInformation || null,
       phone: data.phone,
       primaryContactPerson: {
         email: data.primaryContactPerson.email,
@@ -356,7 +359,7 @@ function CompanyPage() {
         zipCode: data.registeredAddress.zipCode,
       },
       stateOfIncorporation: data.stateOfIncorporation,
-      totalNumberOfEmployees: Number(data.totalNumberOfEmployees),
+      totalNumberOfEmployees: Number(data.employees.totalNumberOfEmployees),
       website: data.website || null,
     };
 

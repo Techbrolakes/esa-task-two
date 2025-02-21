@@ -58,13 +58,7 @@ const CompanySection = ({ register, errors, watch, setValue, initialLogoKey, con
           required
           startIcon={<Mail className="w-4 h-4" />}
         />
-        <PhoneInputField
-          control={control} 
-          name="phone"
-          label="Phone"
-          required
-          error={errors.phone}
-        />
+        <PhoneInputField control={control} name="phone" label="Phone" required error={errors.phone} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -74,6 +68,7 @@ const CompanySection = ({ register, errors, watch, setValue, initialLogoKey, con
           register={register}
           error={errors.website}
           placeholder="https://www.company.com"
+          required
           startIcon={<Globe className="w-4 h-4" />}
         />
         <FancyInput<CompanyFormData>

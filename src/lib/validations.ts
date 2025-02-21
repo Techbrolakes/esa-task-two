@@ -15,22 +15,30 @@ export const primaryContactSchema = z.object({
   phone: z.string().min(1, "Phone number is required"),
 });
 
+export const employeesSchema = z.object({
+  numberOfFullTimeEmployees: z.string().min(1, "Invalid number of employees"),
+  numberOfPartTimeEmployees: z.string().min(1, "Invalid number of employees"),
+  totalNumberOfEmployees: z.string().min(1, "Invalid number of employees"),
+  otherInformation: z.string().optional(),
+});
+
 export const companySchema = z.object({
-  legalName: z.string().min(1, "Legal name is required"),
+  legalName: z
+    .string()
+    .min(1, "Legal name is required")
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, "Legal name cannot be empty or contain only spaces"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(1, "Phone number is required"),
   fax: z.string().optional(),
-  website: z.string().url("Invalid website URL").optional(),
+  website: z.string().url("Invalid website URL"),
   industry: z.string().min(1, "Industry is required"),
   stateOfIncorporation: z.string().min(1, "State of incorporation is required"),
-  numberOfFullTimeEmployees: z.coerce.number().min(0, "Invalid number of employees"),
-  numberOfPartTimeEmployees: z.coerce.number().min(0, "Invalid number of employees"),
-  totalNumberOfEmployees: z.coerce.number().min(0, "Invalid number of employees"),
   facebookCompanyPage: z.string().url("Invalid Facebook URL").optional(),
   linkedInCompanyPage: z.string().url("Invalid LinkedIn URL").optional(),
   logoS3Key: z.string().min(1, "Company logo is required"),
-  otherInformation: z.string().optional(),
   isMailingAddressDifferentFromRegisteredAddress: z.coerce.boolean(),
+  employees: employeesSchema,
   registeredAddress: addressSchema,
   mailingAddress: addressSchema,
   primaryContactPerson: primaryContactSchema,
