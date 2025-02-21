@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { removeItem } from "@/utils/storage";
 import { deleteCookie } from "cookies-next";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Loader, Menu, X } from "lucide-react"; // Added Loader import
 
 const Header = () => {
